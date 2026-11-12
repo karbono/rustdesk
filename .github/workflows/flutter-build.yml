@@ -184,53 +184,7 @@ jobs:
 
       - name: Patch custom server and key
         shell: bash
-        run: |
-          python3 -c '
-          import os
-          server = os.environ.get("RENDEZVOUS_SERVER") or "rd.lulospi.party"
-          key = os.environ.get("RS_PUB_KEY") or "ksulzKNoqGUqVDSrdFrZg9x7vyA9CWdYe0QttmYPtbQ="
-          api = os.environ.get("API_SERVER") or "https://rd.lulospi.party"
-
-          with open("libs/hbb_common/src/config.rs", "r") as f:
-              s = f.read()
-          s = s.replace("\"rs-ny.rustdesk.com\"", f"\"{server}\"")
-          s = s.replace("\"OeVuKk5nlHiXp+APNn0Y3pC1Iwpwn44JGqrQCsWqmBw=\"", f"\"{key}\"")
-          with open("libs/hbb_common/src/config.rs", "w") as f:
-              f.write(s)
-
-          with open("src/common.rs", "r") as f:
-              s = f.read()
-          s = s.replace("\"https://admin.rustdesk.com\"", f"\"{api}\"")
-          with open("src/common.rs", "w") as f:
-              f.write(s)
-          '
-        env:
-          RENDEZVOUS_SERVER: ${{ secrets.RENDEZVOUS_SERVER }}
-          RS_PUB_KEY: ${{ secrets.RS_PUB_KEY }}
-          API_SERVER: ${{ secrets.API_SERVER }}
-
-      - name: Patch custom server and key
-        shell: bash
-        run: |
-          python3 -c '
-          import os
-          server = os.environ.get("RENDEZVOUS_SERVER") or "rd.lulospi.party"
-          key = os.environ.get("RS_PUB_KEY") or "ksulzKNoqGUqVDSrdFrZg9x7vyA9CWdYe0QttmYPtbQ="
-          api = os.environ.get("API_SERVER") or "https://rd.lulospi.party"
-
-          with open("libs/hbb_common/src/config.rs", "r") as f:
-              s = f.read()
-          s = s.replace("\"rs-ny.rustdesk.com\"", f"\"{server}\"")
-          s = s.replace("\"OeVuKk5nlHiXp+APNn0Y3pC1Iwpwn44JGqrQCsWqmBw=\"", f"\"{key}\"")
-          with open("libs/hbb_common/src/config.rs", "w") as f:
-              f.write(s)
-
-          with open("src/common.rs", "r") as f:
-              s = f.read()
-          s = s.replace("\"https://admin.rustdesk.com\"", f"\"{api}\"")
-          with open("src/common.rs", "w") as f:
-              f.write(s)
-          '
+        run: python3 .github/scripts/patch_custom_server.py
         env:
           RENDEZVOUS_SERVER: ${{ secrets.RENDEZVOUS_SERVER }}
           RS_PUB_KEY: ${{ secrets.RS_PUB_KEY }}
@@ -666,26 +620,7 @@ jobs:
 
       - name: Patch custom server and key
         shell: bash
-        run: |
-          python3 -c '
-          import os
-          server = os.environ.get("RENDEZVOUS_SERVER") or "rd.lulospi.party"
-          key = os.environ.get("RS_PUB_KEY") or "ksulzKNoqGUqVDSrdFrZg9x7vyA9CWdYe0QttmYPtbQ="
-          api = os.environ.get("API_SERVER") or "https://rd.lulospi.party"
-
-          with open("libs/hbb_common/src/config.rs", "r") as f:
-              s = f.read()
-          s = s.replace("\"rs-ny.rustdesk.com\"", f"\"{server}\"")
-          s = s.replace("\"OeVuKk5nlHiXp+APNn0Y3pC1Iwpwn44JGqrQCsWqmBw=\"", f"\"{key}\"")
-          with open("libs/hbb_common/src/config.rs", "w") as f:
-              f.write(s)
-
-          with open("src/common.rs", "r") as f:
-              s = f.read()
-          s = s.replace("\"https://admin.rustdesk.com\"", f"\"{api}\"")
-          with open("src/common.rs", "w") as f:
-              f.write(s)
-          '
+        run: python3 .github/scripts/patch_custom_server.py
         env:
           RENDEZVOUS_SERVER: ${{ secrets.RENDEZVOUS_SERVER }}
           RS_PUB_KEY: ${{ secrets.RS_PUB_KEY }}
@@ -904,26 +839,7 @@ jobs:
 
       - name: Patch custom server and key
         shell: bash
-        run: |
-          python3 -c '
-          import os
-          server = os.environ.get("RENDEZVOUS_SERVER") or "rd.lulospi.party"
-          key = os.environ.get("RS_PUB_KEY") or "ksulzKNoqGUqVDSrdFrZg9x7vyA9CWdYe0QttmYPtbQ="
-          api = os.environ.get("API_SERVER") or "https://rd.lulospi.party"
-
-          with open("libs/hbb_common/src/config.rs", "r") as f:
-              s = f.read()
-          s = s.replace("\"rs-ny.rustdesk.com\"", f"\"{server}\"")
-          s = s.replace("\"OeVuKk5nlHiXp+APNn0Y3pC1Iwpwn44JGqrQCsWqmBw=\"", f"\"{key}\"")
-          with open("libs/hbb_common/src/config.rs", "w") as f:
-              f.write(s)
-
-          with open("src/common.rs", "r") as f:
-              s = f.read()
-          s = s.replace("\"https://admin.rustdesk.com\"", f"\"{api}\"")
-          with open("src/common.rs", "w") as f:
-              f.write(s)
-          '
+        run: python3 .github/scripts/patch_custom_server.py
         env:
           RENDEZVOUS_SERVER: ${{ secrets.RENDEZVOUS_SERVER }}
           RS_PUB_KEY: ${{ secrets.RS_PUB_KEY }}
@@ -1061,26 +977,7 @@ jobs:
 
       - name: Patch custom server and key
         shell: bash
-        run: |
-          python3 -c '
-          import os
-          server = os.environ.get("RENDEZVOUS_SERVER") or "rd.lulospi.party"
-          key = os.environ.get("RS_PUB_KEY") or "ksulzKNoqGUqVDSrdFrZg9x7vyA9CWdYe0QttmYPtbQ="
-          api = os.environ.get("API_SERVER") or "https://rd.lulospi.party"
-
-          with open("libs/hbb_common/src/config.rs", "r") as f:
-              s = f.read()
-          s = s.replace("\"rs-ny.rustdesk.com\"", f"\"{server}\"")
-          s = s.replace("\"OeVuKk5nlHiXp+APNn0Y3pC1Iwpwn44JGqrQCsWqmBw=\"", f"\"{key}\"")
-          with open("libs/hbb_common/src/config.rs", "w") as f:
-              f.write(s)
-
-          with open("src/common.rs", "r") as f:
-              s = f.read()
-          s = s.replace("\"https://admin.rustdesk.com\"", f"\"{api}\"")
-          with open("src/common.rs", "w") as f:
-              f.write(s)
-          '
+        run: python3 .github/scripts/patch_custom_server.py
         env:
           RENDEZVOUS_SERVER: ${{ secrets.RENDEZVOUS_SERVER }}
           RS_PUB_KEY: ${{ secrets.RS_PUB_KEY }}
@@ -1648,26 +1545,7 @@ jobs:
 
       - name: Patch custom server and key
         shell: bash
-        run: |
-          python3 -c '
-          import os
-          server = os.environ.get("RENDEZVOUS_SERVER") or "rd.lulospi.party"
-          key = os.environ.get("RS_PUB_KEY") or "ksulzKNoqGUqVDSrdFrZg9x7vyA9CWdYe0QttmYPtbQ="
-          api = os.environ.get("API_SERVER") or "https://rd.lulospi.party"
-
-          with open("libs/hbb_common/src/config.rs", "r") as f:
-              s = f.read()
-          s = s.replace("\"rs-ny.rustdesk.com\"", f"\"{server}\"")
-          s = s.replace("\"OeVuKk5nlHiXp+APNn0Y3pC1Iwpwn44JGqrQCsWqmBw=\"", f"\"{key}\"")
-          with open("libs/hbb_common/src/config.rs", "w") as f:
-              f.write(s)
-
-          with open("src/common.rs", "r") as f:
-              s = f.read()
-          s = s.replace("\"https://admin.rustdesk.com\"", f"\"{api}\"")
-          with open("src/common.rs", "w") as f:
-              f.write(s)
-          '
+        run: python3 .github/scripts/patch_custom_server.py
         env:
           RENDEZVOUS_SERVER: ${{ secrets.RENDEZVOUS_SERVER }}
           RS_PUB_KEY: ${{ secrets.RS_PUB_KEY }}
@@ -1970,26 +1848,7 @@ jobs:
 
       - name: Patch custom server and key
         shell: bash
-        run: |
-          python3 -c '
-          import os
-          server = os.environ.get("RENDEZVOUS_SERVER") or "rd.lulospi.party"
-          key = os.environ.get("RS_PUB_KEY") or "ksulzKNoqGUqVDSrdFrZg9x7vyA9CWdYe0QttmYPtbQ="
-          api = os.environ.get("API_SERVER") or "https://rd.lulospi.party"
-
-          with open("libs/hbb_common/src/config.rs", "r") as f:
-              s = f.read()
-          s = s.replace("\"rs-ny.rustdesk.com\"", f"\"{server}\"")
-          s = s.replace("\"OeVuKk5nlHiXp+APNn0Y3pC1Iwpwn44JGqrQCsWqmBw=\"", f"\"{key}\"")
-          with open("libs/hbb_common/src/config.rs", "w") as f:
-              f.write(s)
-
-          with open("src/common.rs", "r") as f:
-              s = f.read()
-          s = s.replace("\"https://admin.rustdesk.com\"", f"\"{api}\"")
-          with open("src/common.rs", "w") as f:
-              f.write(s)
-          '
+        run: python3 .github/scripts/patch_custom_server.py
         env:
           RENDEZVOUS_SERVER: ${{ secrets.RENDEZVOUS_SERVER }}
           RS_PUB_KEY: ${{ secrets.RS_PUB_KEY }}
@@ -2173,26 +2032,7 @@ jobs:
 
       - name: Patch custom server and key
         shell: bash
-        run: |
-          python3 -c '
-          import os
-          server = os.environ.get("RENDEZVOUS_SERVER") or "rd.lulospi.party"
-          key = os.environ.get("RS_PUB_KEY") or "ksulzKNoqGUqVDSrdFrZg9x7vyA9CWdYe0QttmYPtbQ="
-          api = os.environ.get("API_SERVER") or "https://rd.lulospi.party"
-
-          with open("libs/hbb_common/src/config.rs", "r") as f:
-              s = f.read()
-          s = s.replace("\"rs-ny.rustdesk.com\"", f"\"{server}\"")
-          s = s.replace("\"OeVuKk5nlHiXp+APNn0Y3pC1Iwpwn44JGqrQCsWqmBw=\"", f"\"{key}\"")
-          with open("libs/hbb_common/src/config.rs", "w") as f:
-              f.write(s)
-
-          with open("src/common.rs", "r") as f:
-              s = f.read()
-          s = s.replace("\"https://admin.rustdesk.com\"", f"\"{api}\"")
-          with open("src/common.rs", "w") as f:
-              f.write(s)
-          '
+        run: python3 .github/scripts/patch_custom_server.py
         env:
           RENDEZVOUS_SERVER: ${{ secrets.RENDEZVOUS_SERVER }}
           RS_PUB_KEY: ${{ secrets.RS_PUB_KEY }}
@@ -2532,26 +2372,7 @@ jobs:
 
       - name: Patch custom server and key
         shell: bash
-        run: |
-          python3 -c '
-          import os
-          server = os.environ.get("RENDEZVOUS_SERVER") or "rd.lulospi.party"
-          key = os.environ.get("RS_PUB_KEY") or "ksulzKNoqGUqVDSrdFrZg9x7vyA9CWdYe0QttmYPtbQ="
-          api = os.environ.get("API_SERVER") or "https://rd.lulospi.party"
-
-          with open("libs/hbb_common/src/config.rs", "r") as f:
-              s = f.read()
-          s = s.replace("\"rs-ny.rustdesk.com\"", f"\"{server}\"")
-          s = s.replace("\"OeVuKk5nlHiXp+APNn0Y3pC1Iwpwn44JGqrQCsWqmBw=\"", f"\"{key}\"")
-          with open("libs/hbb_common/src/config.rs", "w") as f:
-              f.write(s)
-
-          with open("src/common.rs", "r") as f:
-              s = f.read()
-          s = s.replace("\"https://admin.rustdesk.com\"", f"\"{api}\"")
-          with open("src/common.rs", "w") as f:
-              f.write(s)
-          '
+        run: python3 .github/scripts/patch_custom_server.py
         env:
           RENDEZVOUS_SERVER: ${{ secrets.RENDEZVOUS_SERVER }}
           RS_PUB_KEY: ${{ secrets.RS_PUB_KEY }}
@@ -2895,26 +2716,7 @@ jobs:
 
       - name: Patch custom server and key
         shell: bash
-        run: |
-          python3 -c '
-          import os
-          server = os.environ.get("RENDEZVOUS_SERVER") or "rd.lulospi.party"
-          key = os.environ.get("RS_PUB_KEY") or "ksulzKNoqGUqVDSrdFrZg9x7vyA9CWdYe0QttmYPtbQ="
-          api = os.environ.get("API_SERVER") or "https://rd.lulospi.party"
-
-          with open("libs/hbb_common/src/config.rs", "r") as f:
-              s = f.read()
-          s = s.replace("\"rs-ny.rustdesk.com\"", f"\"{server}\"")
-          s = s.replace("\"OeVuKk5nlHiXp+APNn0Y3pC1Iwpwn44JGqrQCsWqmBw=\"", f"\"{key}\"")
-          with open("libs/hbb_common/src/config.rs", "w") as f:
-              f.write(s)
-
-          with open("src/common.rs", "r") as f:
-              s = f.read()
-          s = s.replace("\"https://admin.rustdesk.com\"", f"\"{api}\"")
-          with open("src/common.rs", "w") as f:
-              f.write(s)
-          '
+        run: python3 .github/scripts/patch_custom_server.py
         env:
           RENDEZVOUS_SERVER: ${{ secrets.RENDEZVOUS_SERVER }}
           RS_PUB_KEY: ${{ secrets.RS_PUB_KEY }}
@@ -3139,26 +2941,7 @@ jobs:
 
       - name: Patch custom server and key
         shell: bash
-        run: |
-          python3 -c '
-          import os
-          server = os.environ.get("RENDEZVOUS_SERVER") or "rd.lulospi.party"
-          key = os.environ.get("RS_PUB_KEY") or "ksulzKNoqGUqVDSrdFrZg9x7vyA9CWdYe0QttmYPtbQ="
-          api = os.environ.get("API_SERVER") or "https://rd.lulospi.party"
-
-          with open("libs/hbb_common/src/config.rs", "r") as f:
-              s = f.read()
-          s = s.replace("\"rs-ny.rustdesk.com\"", f"\"{server}\"")
-          s = s.replace("\"OeVuKk5nlHiXp+APNn0Y3pC1Iwpwn44JGqrQCsWqmBw=\"", f"\"{key}\"")
-          with open("libs/hbb_common/src/config.rs", "w") as f:
-              f.write(s)
-
-          with open("src/common.rs", "r") as f:
-              s = f.read()
-          s = s.replace("\"https://admin.rustdesk.com\"", f"\"{api}\"")
-          with open("src/common.rs", "w") as f:
-              f.write(s)
-          '
+        run: python3 .github/scripts/patch_custom_server.py
         env:
           RENDEZVOUS_SERVER: ${{ secrets.RENDEZVOUS_SERVER }}
           RS_PUB_KEY: ${{ secrets.RS_PUB_KEY }}
@@ -3242,26 +3025,7 @@ jobs:
 
       - name: Patch custom server and key
         shell: bash
-        run: |
-          python3 -c '
-          import os
-          server = os.environ.get("RENDEZVOUS_SERVER") or "rd.lulospi.party"
-          key = os.environ.get("RS_PUB_KEY") or "ksulzKNoqGUqVDSrdFrZg9x7vyA9CWdYe0QttmYPtbQ="
-          api = os.environ.get("API_SERVER") or "https://rd.lulospi.party"
-
-          with open("libs/hbb_common/src/config.rs", "r") as f:
-              s = f.read()
-          s = s.replace("\"rs-ny.rustdesk.com\"", f"\"{server}\"")
-          s = s.replace("\"OeVuKk5nlHiXp+APNn0Y3pC1Iwpwn44JGqrQCsWqmBw=\"", f"\"{key}\"")
-          with open("libs/hbb_common/src/config.rs", "w") as f:
-              f.write(s)
-
-          with open("src/common.rs", "r") as f:
-              s = f.read()
-          s = s.replace("\"https://admin.rustdesk.com\"", f"\"{api}\"")
-          with open("src/common.rs", "w") as f:
-              f.write(s)
-          '
+        run: python3 .github/scripts/patch_custom_server.py
         env:
           RENDEZVOUS_SERVER: ${{ secrets.RENDEZVOUS_SERVER }}
           RS_PUB_KEY: ${{ secrets.RS_PUB_KEY }}
@@ -3331,26 +3095,7 @@ jobs:
 
       - name: Patch custom server and key
         shell: bash
-        run: |
-          python3 -c '
-          import os
-          server = os.environ.get("RENDEZVOUS_SERVER") or "rd.lulospi.party"
-          key = os.environ.get("RS_PUB_KEY") or "ksulzKNoqGUqVDSrdFrZg9x7vyA9CWdYe0QttmYPtbQ="
-          api = os.environ.get("API_SERVER") or "https://rd.lulospi.party"
-
-          with open("libs/hbb_common/src/config.rs", "r") as f:
-              s = f.read()
-          s = s.replace("\"rs-ny.rustdesk.com\"", f"\"{server}\"")
-          s = s.replace("\"OeVuKk5nlHiXp+APNn0Y3pC1Iwpwn44JGqrQCsWqmBw=\"", f"\"{key}\"")
-          with open("libs/hbb_common/src/config.rs", "w") as f:
-              f.write(s)
-
-          with open("src/common.rs", "r") as f:
-              s = f.read()
-          s = s.replace("\"https://admin.rustdesk.com\"", f"\"{api}\"")
-          with open("src/common.rs", "w") as f:
-              f.write(s)
-          '
+        run: python3 .github/scripts/patch_custom_server.py
         env:
           RENDEZVOUS_SERVER: ${{ secrets.RENDEZVOUS_SERVER }}
           RS_PUB_KEY: ${{ secrets.RS_PUB_KEY }}
