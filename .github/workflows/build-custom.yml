@@ -3,6 +3,8 @@ name: Build Custom RustDesk (Windows & Android)
 on:
   workflow_dispatch:
 
+permissions: write-all
+
 jobs:
   run-build:
     uses: ./.github/workflows/flutter-build.yml
