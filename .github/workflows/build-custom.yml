@@ -24,6 +24,7 @@ jobs:
   #   https://github.com/<repo>/releases/download/custom/rustdesk-lulospi-windows.exe
   #   https://github.com/<repo>/releases/download/custom/rustdesk-lulospi-windows.msi
   #   https://github.com/<repo>/releases/download/custom/rustdesk-lulospi-android.apk
+  #   https://github.com/<repo>/releases/download/custom/rustdesk-lulospi-linux.AppImage  (and .deb)
   # dl.lulospi.party/win and /android redirect to those.
   fixed-name-downloads:
     name: Publish fixed-name downloads
@@ -43,7 +44,8 @@ jobs:
           set -euo pipefail
           mkdir dl && cd dl
           gh release download "$TAG" --pattern 'rustdesk-[0-9]*-x86_64.exe' --pattern 'rustdesk-[0-9]*-x86_64.msi' \
-            --pattern 'rustdesk-[0-9]*-universal.apk' --pattern 'rustdesk-[0-9]*-universal-signed.apk'
+            --pattern 'rustdesk-[0-9]*-universal.apk' --pattern 'rustdesk-[0-9]*-universal-signed.apk' \
+            --pattern 'rustdesk-[0-9]*-x86_64.AppImage' --pattern 'rustdesk-[0-9]*-x86_64.deb'
           # Highest version wins; for the same version a signed file (…-signed.apk) wins over an unsigned one.
           # With the signing secrets the APK is published as …-universal-signed.apk; without them it is
           # …-universal.apk, signed with a throwaway debug key.
@@ -57,6 +59,7 @@ jobs:
           }
           exe=$(newest rustdesk-[0-9]*-x86_64.exe); msi=$(newest rustdesk-[0-9]*-x86_64.msi)
           apk=$(newest rustdesk-[0-9]*-universal.apk rustdesk-[0-9]*-universal-signed.apk)
+          appimage=$(newest rustdesk-[0-9]*-x86_64.AppImage); deb=$(newest rustdesk-[0-9]*-x86_64.deb)
           for f in "$exe" "$msi" "$apk"; do
             if [ -z "$f" ] || [ ! -s "$f" ]; then echo "::error::a build is missing from release $TAG (exe='$exe' msi='$msi' apk='$apk')"; exit 1; fi
           done
@@ -72,8 +75,10 @@ jobs:
           cp "$exe" rustdesk-lulospi-windows.exe
           cp "$msi" rustdesk-lulospi-windows.msi
           cp "$apk" rustdesk-lulospi-android.apk
+          # Linux is optional: the release may predate the Linux build.
+          if [ -n "$appimage" ] && [ -s "$appimage" ]; then cp "$appimage" rustdesk-lulospi-linux.AppImage; fi
+          if [ -n "$deb" ] && [ -s "$deb" ]; then cp "$deb" rustdesk-lulospi-linux.deb; fi
           sha256sum rustdesk-lulospi-* > rustdesk-lulospi-SHA256SUMS.txt
-          printf '%s\n%s\n%s\n' "$exe" "$msi" "$apk" > rustdesk-lulospi-VERSION.txt
-          gh release upload "$TAG" rustdesk-lulospi-windows.exe rustdesk-lulospi-windows.msi rustdesk-lulospi-android.apk \
-            rustdesk-lulospi-SHA256SUMS.txt rustdesk-lulospi-VERSION.txt --clobber
+          printf '%s\n' "$exe" "$msi" "$apk" $appimage $deb > rustdesk-lulospi-VERSION.txt
+          gh release upload "$TAG" rustdesk-lulospi-* --clobber
           cat rustdesk-lulospi-VERSION.txt rustdesk-lulospi-SHA256SUMS.txt >> "$GITHUB_STEP_SUMMARY"

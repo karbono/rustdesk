@@ -14,4 +14,5 @@ homelab server baked in, and publishes them in the `custom` release.
   `ANDROID_KEY_STORE_PASSWORD` and `ANDROID_KEY_PASSWORD` every build is signed with the same key, so a new APK
   installs over the old one. Without them each build gets a throwaway debug key and Android refuses the update.
 - The Windows exe is not code-signed: SmartScreen shows "unknown publisher" (More info → Run anyway).
-- Only Windows x64 and Android are built, to stay inside the free Actions minutes. The nightly schedule is off.
+- Built: Windows x64, Android, and Linux x86_64 (deb, rpm, Arch package, AppImage). The AppImage is the one behind
+  `https://dl.lulospi.party/linux`. Everything else (macOS, iOS, ARM, web) is switched off. The nightly schedule is off.
