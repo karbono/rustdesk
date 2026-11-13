@@ -42,9 +42,21 @@ jobs:
         run: |
           set -euo pipefail
           mkdir dl && cd dl
-          gh release download "$TAG" --pattern 'rustdesk-[0-9]*-x86_64.exe' --pattern 'rustdesk-[0-9]*-x86_64.msi' --pattern 'rustdesk-[0-9]*-universal.apk'
-          newest() { ls -1 $1 2>/dev/null | sort -V | tail -1; }
-          exe=$(newest 'rustdesk-[0-9]*-x86_64.exe'); msi=$(newest 'rustdesk-[0-9]*-x86_64.msi'); apk=$(newest 'rustdesk-[0-9]*-universal.apk')
+          gh release download "$TAG" --pattern 'rustdesk-[0-9]*-x86_64.exe' --pattern 'rustdesk-[0-9]*-x86_64.msi' \
+            --pattern 'rustdesk-[0-9]*-universal.apk' --pattern 'rustdesk-[0-9]*-universal-signed.apk'
+          # Highest version wins; for the same version a signed file (…-signed.apk) wins over an unsigned one.
+          # With the signing secrets the APK is published as …-universal-signed.apk; without them it is
+          # …-universal.apk, signed with a throwaway debug key.
+          newest() {
+            for f in "$@"; do
+              [ -e "$f" ] || continue
+              v=${f#rustdesk-}; v=${v%%-*}
+              case "$f" in *-signed.*) s=1 ;; *) s=0 ;; esac
+              echo "$v $s $f"
+            done | sort -k1,1V -k2,2n | tail -1 | cut -d' ' -f3
+          }
+          exe=$(newest rustdesk-[0-9]*-x86_64.exe); msi=$(newest rustdesk-[0-9]*-x86_64.msi)
+          apk=$(newest rustdesk-[0-9]*-universal.apk rustdesk-[0-9]*-universal-signed.apk)
           for f in "$exe" "$msi" "$apk"; do
             if [ -z "$f" ] || [ ! -s "$f" ]; then echo "::error::a build is missing from release $TAG (exe='$exe' msi='$msi' apk='$apk')"; exit 1; fi
           done
