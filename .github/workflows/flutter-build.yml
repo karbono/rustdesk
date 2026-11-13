@@ -367,6 +367,13 @@ jobs:
               Write-Host "Ingore the printer driver error."
           }
 
+      - name: Verify the custom server is in the built library
+        shell: bash
+        run: python3 .github/scripts/verify_custom_server.py ./rustdesk/librustdesk.dll
+        env:
+          RENDEZVOUS_SERVER: ${{ secrets.RENDEZVOUS_SERVER }}
+          RS_PUB_KEY: ${{ secrets.RS_PUB_KEY }}
+
       - name: Run the Rust tests
         # x86_64 only: the tests are the same code on arm64, and that runner is the slow one.
         if: ${{ !inputs.upload-artifact && matrix.job.arch == 'x86_64' }}

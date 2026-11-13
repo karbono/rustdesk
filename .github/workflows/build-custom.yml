@@ -45,7 +45,7 @@ jobs:
           mkdir dl && cd dl
           gh release download "$TAG" --pattern 'rustdesk-[0-9]*-x86_64.exe' --pattern 'rustdesk-[0-9]*-x86_64.msi' \
             --pattern 'rustdesk-[0-9]*-universal.apk' --pattern 'rustdesk-[0-9]*-universal-signed.apk' \
-            --pattern 'rustdesk-[0-9]*-x86_64.AppImage' --pattern 'rustdesk-[0-9]*-x86_64.deb'
+            --pattern 'rustdesk-[0-9]*-x86_64.AppImage' --pattern 'rustdesk-[0-9]*-x86_64.deb' --pattern 'rustdesk-[0-9]*-x86_64.pkg.tar.zst'
           # Highest version wins; for the same version a signed file (…-signed.apk) wins over an unsigned one.
           # With the signing secrets the APK is published as …-universal-signed.apk; without them it is
           # …-universal.apk, signed with a throwaway debug key.
@@ -60,6 +60,7 @@ jobs:
           exe=$(newest rustdesk-[0-9]*-x86_64.exe); msi=$(newest rustdesk-[0-9]*-x86_64.msi)
           apk=$(newest rustdesk-[0-9]*-universal.apk rustdesk-[0-9]*-universal-signed.apk)
           appimage=$(newest rustdesk-[0-9]*-x86_64.AppImage); deb=$(newest rustdesk-[0-9]*-x86_64.deb)
+          arch=$(newest rustdesk-[0-9]*-x86_64.pkg.tar.zst)
           for f in "$exe" "$msi" "$apk"; do
             if [ -z "$f" ] || [ ! -s "$f" ]; then echo "::error::a build is missing from release $TAG (exe='$exe' msi='$msi' apk='$apk')"; exit 1; fi
           done
@@ -77,8 +78,17 @@ jobs:
           cp "$apk" rustdesk-lulospi-android.apk
           # Linux is optional: the release may predate the Linux build.
           if [ -n "$appimage" ] && [ -s "$appimage" ]; then cp "$appimage" rustdesk-lulospi-linux.AppImage; fi
-          if [ -n "$deb" ] && [ -s "$deb" ]; then cp "$deb" rustdesk-lulospi-linux.deb; fi
+          if [ -n "$deb" ] && [ -s "$deb" ]; then
+            # The AppImage is built from this deb, so checking the deb covers both.
+            dpkg-deb --fsys-tarfile "$deb" | tar -xO ./usr/share/rustdesk/lib/librustdesk.so > lib.so
+            if ! grep -aq 'rd.lulospi.party' lib.so || grep -aq 'rs-ny.rustdesk.com' lib.so; then
+              echo "::error::$deb was not built with the homelab server"; exit 1
+            fi
+            rm -f lib.so
+            cp "$deb" rustdesk-lulospi-linux.deb
+          fi
+          if [ -n "$arch" ] && [ -s "$arch" ]; then cp "$arch" rustdesk-lulospi-linux.pkg.tar.zst; fi
           sha256sum rustdesk-lulospi-* > rustdesk-lulospi-SHA256SUMS.txt
-          printf '%s\n' "$exe" "$msi" "$apk" $appimage $deb > rustdesk-lulospi-VERSION.txt
+          printf '%s\n' "$exe" "$msi" "$apk" $appimage $deb $arch > rustdesk-lulospi-VERSION.txt
           gh release upload "$TAG" rustdesk-lulospi-* --clobber
           cat rustdesk-lulospi-VERSION.txt rustdesk-lulospi-SHA256SUMS.txt >> "$GITHUB_STEP_SUMMARY"
