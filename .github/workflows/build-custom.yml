@@ -2,13 +2,66 @@ name: Build Custom RustDesk (Windows & Android)
 
 on:
   workflow_dispatch:
+    inputs:
+      only_links:
+        description: "Skip the build: only refresh the fixed-name downloads from what the release already has"
+        type: boolean
+        default: false
 
 permissions: write-all
 
 jobs:
   run-build:
+    if: ${{ !inputs.only_links }}
     uses: ./.github/workflows/flutter-build.yml
     secrets: inherit
     with:
       upload-artifact: true
       upload-tag: "custom"
+
+  # The build names its files after the version (rustdesk-1.5.3-x86_64.exe), so a short link
+  # would break on every version bump. This copies the newest ones to names that never change:
+  #   https://github.com/<repo>/releases/download/custom/rustdesk-lulospi-windows.exe
+  #   https://github.com/<repo>/releases/download/custom/rustdesk-lulospi-windows.msi
+  #   https://github.com/<repo>/releases/download/custom/rustdesk-lulospi-android.apk
+  # dl.lulospi.party/win and /android redirect to those.
+  fixed-name-downloads:
+    name: Publish fixed-name downloads
+    needs: [run-build]
+    if: ${{ always() && (needs.run-build.result == 'success' || needs.run-build.result == 'skipped') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      TAG: custom
+    steps:
+      - name: Copy the newest build to the fixed names
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir dl && cd dl
+          gh release download "$TAG" --pattern 'rustdesk-[0-9]*-x86_64.exe' --pattern 'rustdesk-[0-9]*-x86_64.msi' --pattern 'rustdesk-[0-9]*-universal.apk'
+          newest() { ls -1 $1 2>/dev/null | sort -V | tail -1; }
+          exe=$(newest 'rustdesk-[0-9]*-x86_64.exe'); msi=$(newest 'rustdesk-[0-9]*-x86_64.msi'); apk=$(newest 'rustdesk-[0-9]*-universal.apk')
+          for f in "$exe" "$msi" "$apk"; do
+            if [ -z "$f" ] || [ ! -s "$f" ]; then echo "::error::a build is missing from release $TAG (exe='$exe' msi='$msi' apk='$apk')"; exit 1; fi
+          done
+          # A client that still points at the public servers must never reach the short links.
+          # (Only the APK can be checked this way: the Windows exe is a compressed self-extractor.)
+          for abi in arm64-v8a armeabi-v7a x86_64; do
+            unzip -p "$apk" "lib/$abi/librustdesk.so" > lib.so
+            if ! grep -aq 'rd.lulospi.party' lib.so || grep -aq 'rs-ny.rustdesk.com' lib.so; then
+              echo "::error::$apk ($abi) was not built with the homelab server"; exit 1
+            fi
+          done
+          rm -f lib.so
+          cp "$exe" rustdesk-lulospi-windows.exe
+          cp "$msi" rustdesk-lulospi-windows.msi
+          cp "$apk" rustdesk-lulospi-android.apk
+          sha256sum rustdesk-lulospi-* > rustdesk-lulospi-SHA256SUMS.txt
+          printf '%s\n%s\n%s\n' "$exe" "$msi" "$apk" > rustdesk-lulospi-VERSION.txt
+          gh release upload "$TAG" rustdesk-lulospi-windows.exe rustdesk-lulospi-windows.msi rustdesk-lulospi-android.apk \
+            rustdesk-lulospi-SHA256SUMS.txt rustdesk-lulospi-VERSION.txt --clobber
+          cat rustdesk-lulospi-VERSION.txt rustdesk-lulospi-SHA256SUMS.txt >> "$GITHUB_STEP_SUMMARY"
