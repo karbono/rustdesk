@@ -21,10 +21,10 @@ jobs:
 
   # The build names its files after the version (rustdesk-1.5.3-x86_64.exe), so a short link
   # would break on every version bump. This copies the newest ones to names that never change:
-  #   https://github.com/<repo>/releases/download/custom/rustdesk-lulospi-windows.exe
-  #   https://github.com/<repo>/releases/download/custom/rustdesk-lulospi-windows.msi
-  #   https://github.com/<repo>/releases/download/custom/rustdesk-lulospi-android.apk
-  #   https://github.com/<repo>/releases/download/custom/rustdesk-lulospi-linux.AppImage  (and .deb, .rpm, -suse.rpm)
+  #   https://github.com/<repo>/releases/download/custom/rustdesk-lulos.exe
+  #   https://github.com/<repo>/releases/download/custom/rustdesk-lulos.msi
+  #   https://github.com/<repo>/releases/download/custom/rustdesk-lulos.apk
+  #   https://github.com/<repo>/releases/download/custom/rustdesk-lulos.AppImage  (and .deb, .rpm, -suse.rpm)
   # dl.lulospi.party/win and /android redirect to those.
   fixed-name-downloads:
     name: Publish fixed-name downloads
@@ -80,19 +80,19 @@ jobs:
             check_lib lib.so "$apk ($abi)"
           done
           rm -f lib.so
-          cp "$exe" rustdesk-lulospi-windows.exe
-          cp "$msi" rustdesk-lulospi-windows.msi
-          cp "$apk" rustdesk-lulospi-android.apk
+          cp "$exe" rustdesk-lulos.exe
+          cp "$msi" rustdesk-lulos.msi
+          cp "$apk" rustdesk-lulos.apk
           # Linux is optional: the release may predate the Linux build.
-          if [ -n "$appimage" ] && [ -s "$appimage" ]; then cp "$appimage" rustdesk-lulospi-linux.AppImage; fi
+          if [ -n "$appimage" ] && [ -s "$appimage" ]; then cp "$appimage" rustdesk-lulos.AppImage; fi
           if [ -n "$deb" ] && [ -s "$deb" ]; then
             # The AppImage is built from this deb, so checking the deb covers both.
             dpkg-deb --fsys-tarfile "$deb" | tar -xO ./usr/share/rustdesk/lib/librustdesk.so > lib.so
             check_lib lib.so "$deb"
             rm -f lib.so
-            cp "$deb" rustdesk-lulospi-linux.deb
+            cp "$deb" rustdesk-lulos.deb
           fi
-          if [ -n "$arch" ] && [ -s "$arch" ]; then cp "$arch" rustdesk-lulospi-linux.pkg.tar.zst; fi
+          if [ -n "$arch" ] && [ -s "$arch" ]; then cp "$arch" rustdesk-lulos.pkg.tar.zst; fi
           # Same bundle as the deb, packed by rpmbuild; checking one is cheap (bsdtar reads rpm).
           if { [ -n "$rpm" ] || [ -n "$rpmsuse" ]; } && ! command -v bsdtar >/dev/null; then
             sudo apt-get install -y -qq libarchive-tools >/dev/null
@@ -103,9 +103,9 @@ jobs:
             check_lib lib.so "$f"
             rm -f lib.so
           done
-          if [ -n "$rpm" ] && [ -s "$rpm" ]; then cp "$rpm" rustdesk-lulospi-linux.rpm; fi
-          if [ -n "$rpmsuse" ] && [ -s "$rpmsuse" ]; then cp "$rpmsuse" rustdesk-lulospi-linux-suse.rpm; fi
-          sha256sum rustdesk-lulospi-* > rustdesk-lulospi-SHA256SUMS.txt
+          if [ -n "$rpm" ] && [ -s "$rpm" ]; then cp "$rpm" rustdesk-lulos.rpm; fi
+          if [ -n "$rpmsuse" ] && [ -s "$rpmsuse" ]; then cp "$rpmsuse" rustdesk-lulos-suse.rpm; fi
+          sha256sum rustdesk-lulos[.-]* > rustdesk-lulospi-SHA256SUMS.txt
           printf '%s\n' "$exe" "$msi" "$apk" $appimage $deb $arch $rpm $rpmsuse > rustdesk-lulospi-VERSION.txt
-          gh release upload "$TAG" rustdesk-lulospi-* --clobber
+          gh release upload "$TAG" rustdesk-lulos[.-]* rustdesk-lulospi-SHA256SUMS.txt rustdesk-lulospi-VERSION.txt --clobber
           cat rustdesk-lulospi-VERSION.txt rustdesk-lulospi-SHA256SUMS.txt >> "$GITHUB_STEP_SUMMARY"

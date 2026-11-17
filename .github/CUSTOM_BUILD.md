@@ -8,7 +8,7 @@ homelab server baked in, and publishes them in the `custom` release.
   instead of shipping a client that points at the public servers. `verify_custom_server.py` then checks the built
   Windows library, and the fixed-name step checks the APK and the deb.
 - After the build, `fixed-name-downloads` copies the newest files to names that never change
-  (`rustdesk-lulospi-windows.exe`, `rustdesk-lulospi-windows.msi`, `rustdesk-lulospi-android.apk`) and checks that the
+  (`rustdesk-lulos.exe`, `rustdesk-lulos.msi`, `rustdesk-lulos.apk`) and checks that the
   APK really contains the homelab server. `https://dl.lulospi.party/win` and `/android` redirect to those.
   Run the workflow with `only_links` ticked to refresh them without building (about a minute).
 - Android signing: with the secrets `ANDROID_SIGNING_KEY` (base64 keystore), `ANDROID_ALIAS`,
