@@ -7,7 +7,7 @@ Works on the uncompressed library (librustdesk.dll / librustdesk.so), not on pac
 import os
 import sys
 
-server = (os.environ.get("RENDEZVOUS_SERVER") or "rd.lulospi.party").encode()
+server = (os.environ.get("RENDEZVOUS_SERVER") or "rd.karbono.es").encode()
 key = (os.environ.get("RS_PUB_KEY") or "ksulzKNoqGUqVDSrdFrZg9x7vyA9CWdYe0QttmYPtbQ=").encode()
 PUBLIC = [b"rs-ny.rustdesk.com", b"OeVuKk5nlHiXp+APNn0Y3pC1Iwpwn44JGqrQCsWqmBw="]
 # Only reaches the Rust library through patch_custom_server.py: proves the settings lock is in.

@@ -9,11 +9,11 @@ homelab server baked in, and publishes them in the `custom` release.
   Windows library, and the fixed-name step checks the APK and the deb.
 - After the build, `fixed-name-downloads` copies the newest files to names that never change
   (`rustdesk-lulos.exe`, `rustdesk-lulos.msi`, `rustdesk-lulos.apk`) and checks that the
-  APK really contains the homelab server. `https://dl.lulospi.party/win` and `/android` redirect to those.
+  APK really contains the homelab server. `https://dl.karbono.es/win` and `/android` redirect to those.
   Run the workflow with `only_links` ticked to refresh them without building (about a minute).
 - Android signing: with the secrets `ANDROID_SIGNING_KEY` (base64 keystore), `ANDROID_ALIAS`,
   `ANDROID_KEY_STORE_PASSWORD` and `ANDROID_KEY_PASSWORD` every build is signed with the same key, so a new APK
   installs over the old one. Without them each build gets a throwaway debug key and Android refuses the update.
 - The Windows exe is not code-signed: SmartScreen shows "unknown publisher" (More info → Run anyway).
 - Built: Windows x64, Android, and Linux x86_64 (deb, rpm, Arch package, AppImage). The AppImage is the one behind
-  `https://dl.lulospi.party/linux`. Everything else (macOS, iOS, ARM, web) is switched off. The nightly schedule is off.
+  `https://dl.karbono.es/linux`. Everything else (macOS, iOS, ARM, web) is switched off. The nightly schedule is off.

@@ -25,7 +25,7 @@ jobs:
   #   https://github.com/<repo>/releases/download/custom/rustdesk-lulos.msi
   #   https://github.com/<repo>/releases/download/custom/rustdesk-lulos.apk
   #   https://github.com/<repo>/releases/download/custom/rustdesk-lulos.AppImage  (and .deb, .rpm, -suse.rpm)
-  # dl.lulospi.party/win and /android redirect to those.
+  # dl.karbono.es/win and /android redirect to those.
   fixed-name-downloads:
     name: Publish fixed-name downloads
     needs: [run-build]
@@ -67,7 +67,7 @@ jobs:
           # reach the short links. hide-server-settings only ends up in the Rust library through
           # patch_custom_server.py, so it marks that the settings lock was baked in.
           check_lib() {
-            if ! grep -aq 'rd.lulospi.party' "$1" || grep -aq 'rs-ny.rustdesk.com' "$1" || ! grep -aq 'hide-server-settings' "$1"; then
+            if ! grep -aq 'rd.karbono.es' "$1" || grep -aq 'rs-ny.rustdesk.com' "$1" || ! grep -aq 'hide-server-settings' "$1"; then
               echo "::error::$2 was not built with the homelab server and locked settings"; exit 1
             fi
           }

@@ -8,9 +8,9 @@ import os
 import secrets
 import sys
 
-server = os.environ.get("RENDEZVOUS_SERVER") or "rd.lulospi.party"
+server = os.environ.get("RENDEZVOUS_SERVER") or "rd.karbono.es"
 key = os.environ.get("RS_PUB_KEY") or "ksulzKNoqGUqVDSrdFrZg9x7vyA9CWdYe0QttmYPtbQ="
-api = os.environ.get("API_SERVER") or "https://rd.lulospi.party"
+api = os.environ.get("API_SERVER") or "https://rd.karbono.es"
 
 # Settings baked into the client. OVERWRITE_SETTINGS wins over the user's own config and the UI
 # shows them read-only (is_option_fixed), so nobody can point the client at the public servers.
