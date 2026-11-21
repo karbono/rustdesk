@@ -12,6 +12,11 @@ on:
       publish-update-metadata:
         type: boolean
         default: false
+      # Bake the homelab server, key and locked settings into the client (patch_custom_server.py).
+      # Only build-custom.yml sets it; every other caller builds the stock upstream client.
+      custom-client:
+        type: boolean
+        default: false
 
 # NOTE: F-Droid builder script 'flutter/build_fdroid.sh' reads environment
 # variables from this workflow!
@@ -183,6 +188,7 @@ jobs:
           submodules: recursive
 
       - name: Patch custom server and key
+        if: ${{ inputs.custom-client }}
         shell: bash
         run: python3 .github/scripts/patch_custom_server.py
         env:
@@ -369,6 +375,7 @@ jobs:
           }
 
       - name: Verify the custom server is in the built library
+        if: ${{ inputs.custom-client }}
         shell: bash
         run: python3 .github/scripts/verify_custom_server.py ./rustdesk/librustdesk.dll
         env:
@@ -582,7 +589,6 @@ jobs:
             ./SignOutput/rustdesk-*.exe
 
       - name: Publish Release
-        continue-on-error: true
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
         if: env.UPLOAD_ARTIFACT == 'true' && env.PUBLISH_UPDATE_METADATA != 'true'
         with:
@@ -627,6 +633,7 @@ jobs:
           submodules: recursive
 
       - name: Patch custom server and key
+        if: ${{ inputs.custom-client }}
         shell: bash
         run: python3 .github/scripts/patch_custom_server.py
         env:
@@ -847,6 +854,7 @@ jobs:
           submodules: recursive
 
       - name: Patch custom server and key
+        if: ${{ inputs.custom-client }}
         shell: bash
         run: python3 .github/scripts/patch_custom_server.py
         env:
@@ -986,6 +994,7 @@ jobs:
           submodules: recursive
 
       - name: Patch custom server and key
+        if: ${{ inputs.custom-client }}
         shell: bash
         run: python3 .github/scripts/patch_custom_server.py
         env:
@@ -1555,6 +1564,7 @@ jobs:
           submodules: recursive
 
       - name: Patch custom server and key
+        if: ${{ inputs.custom-client }}
         shell: bash
         run: python3 .github/scripts/patch_custom_server.py
         env:
@@ -1782,7 +1792,6 @@ jobs:
           path: signed-apk/rustdesk-${{ env.VERSION }}-${{ matrix.job.arch }}.apk
 
       - name: Publish unsigned apk package
-        continue-on-error: true
         if: env.ANDROID_SIGNING_KEY == null && env.UPLOAD_ARTIFACT == 'true'
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
         with:
@@ -1859,6 +1868,7 @@ jobs:
           submodules: recursive
 
       - name: Patch custom server and key
+        if: ${{ inputs.custom-client }}
         shell: bash
         run: python3 .github/scripts/patch_custom_server.py
         env:
@@ -1984,7 +1994,6 @@ jobs:
           path: signed-apk/rustdesk-${{ env.VERSION }}-universal${{ env.suffix }}.apk
 
       - name: Publish unsigned apk package
-        continue-on-error: true
         if: env.ANDROID_SIGNING_KEY == null && env.UPLOAD_ARTIFACT == 'true'
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
         with:
@@ -2036,6 +2045,7 @@ jobs:
           submodules: recursive
 
       - name: Patch custom server and key
+        if: ${{ inputs.custom-client }}
         shell: bash
         run: python3 .github/scripts/patch_custom_server.py
         env:
@@ -2377,6 +2387,7 @@ jobs:
           submodules: recursive
 
       - name: Patch custom server and key
+        if: ${{ inputs.custom-client }}
         shell: bash
         run: python3 .github/scripts/patch_custom_server.py
         env:
@@ -2722,6 +2733,7 @@ jobs:
           submodules: recursive
 
       - name: Patch custom server and key
+        if: ${{ inputs.custom-client }}
         shell: bash
         run: python3 .github/scripts/patch_custom_server.py
         env:
@@ -2947,6 +2959,7 @@ jobs:
           submodules: recursive
 
       - name: Patch custom server and key
+        if: ${{ inputs.custom-client }}
         shell: bash
         run: python3 .github/scripts/patch_custom_server.py
         env:
@@ -3032,6 +3045,7 @@ jobs:
           submodules: recursive
 
       - name: Patch custom server and key
+        if: ${{ inputs.custom-client }}
         shell: bash
         run: python3 .github/scripts/patch_custom_server.py
         env:
@@ -3103,6 +3117,7 @@ jobs:
           submodules: recursive
 
       - name: Patch custom server and key
+        if: ${{ inputs.custom-client }}
         shell: bash
         run: python3 .github/scripts/patch_custom_server.py
         env:

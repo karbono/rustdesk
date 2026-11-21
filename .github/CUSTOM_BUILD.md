@@ -7,6 +7,9 @@ homelab server baked in, and publishes them in the `custom` release.
   `.github/scripts/patch_custom_server.py`. If upstream renames the strings the script patches, the build fails
   instead of shipping a client that points at the public servers. `verify_custom_server.py` then checks the built
   Windows library, and the fixed-name step checks the APK and the deb.
+- The patch and verify steps in `flutter-build.yml` only run with the input `custom-client: true`, which only
+  `build-custom.yml` sets; the other callers build the stock client. Release uploads are fatal, so the fixed names
+  never point at assets from an older run. `python3 .github/tests/test_custom_workflows.py` checks these rules.
 - After the build, `fixed-name-downloads` copies the newest files to names that never change
   (`rustdesk-lulos.exe`, `rustdesk-lulos.msi`, `rustdesk-lulos.apk`) and checks that the
   APK really contains the homelab server. `https://dl.karbono.es/win` and `/android` redirect to those.
