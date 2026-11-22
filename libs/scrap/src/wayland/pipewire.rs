@@ -1782,29 +1782,62 @@ fn sort_streams(
         }
     }
 
-    let mut sorted_streams = Vec::new();
-    let mut sorted_shared_displays = Vec::new();
-    // Move matching items in order without cloning
-    for (x, y) in display_order.into_iter() {
-        for i in 0..streams.len() {
-            if streams[i].position.0 == x && streams[i].position.1 == y {
-                sorted_streams.push(streams.remove(i));
-                // shared_displays.len() must be equal to streams.len()
-                // But we still check the length to avoid panic
-                if shared_displays.len() > i {
-                    sorted_shared_displays.push(shared_displays.remove(i));
-                }
-                break;
-            }
+    let positions: Vec<(i32, i32)> = streams.iter().map(|s| s.position).collect();
+    let order = stream_order(&display_order, &positions);
+    let mut old_streams: Vec<Option<PwStreamInfo>> = streams.drain(..).map(Some).collect();
+    // shared_displays.len() must be equal to streams.len()
+    // But we still check the length to avoid panic
+    let mut old_shared: Vec<Option<crate::Display>> = shared_displays.drain(..).map(Some).collect();
+    for i in order {
+        if let Some(s) = old_streams[i].take() {
+            streams.push(s);
+        }
+        if let Some(d) = old_shared.get_mut(i).and_then(Option::take) {
+            shared_displays.push(d);
         }
     }
-    *streams = sorted_streams;
-    *shared_displays = sorted_shared_displays;
+}
+
+// The order streams take: those at an output origin first, in the order of `display_order`; then,
+// in their own order, those whose position names no output. KDE can share the whole workspace as
+// one stream at (0, 0) while no output starts there (an output at (0, 240)); dropping it left no
+// display and the client got "Failed to get capturer display info".
+fn stream_order(display_order: &[(i32, i32)], positions: &[(i32, i32)]) -> Vec<usize> {
+    let mut used = vec![false; positions.len()];
+    let mut order = Vec::with_capacity(positions.len());
+    for origin in display_order {
+        if let Some(i) = (0..positions.len()).find(|&i| !used[i] && positions[i] == *origin) {
+            used[i] = true;
+            order.push(i);
+        }
+    }
+    order.extend((0..positions.len()).filter(|&i| !used[i]));
+    order
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{corrected_origin, WaylandDisplayInfo};
+    use super::{corrected_origin, stream_order, WaylandDisplayInfo};
+
+    #[test]
+    fn streams_at_no_output_origin_are_kept_after_the_matched_ones() {
+        let outputs = [(1920, 0), (0, 240), (4480, 0)];
+        // The whole KDE workspace as one stream at (0, 0): kept.
+        assert_eq!(stream_order(&outputs, &[(0, 0)]), vec![0]);
+        // One stream per output: sorted by the outputs, primary first.
+        assert_eq!(
+            stream_order(&outputs, &[(0, 240), (4480, 0), (1920, 0)]),
+            vec![2, 0, 1]
+        );
+        // A mix: matched first, the rest in their own order.
+        assert_eq!(
+            stream_order(&outputs, &[(7, 7), (4480, 0), (0, 0)]),
+            vec![1, 0, 2]
+        );
+        // Two streams at the same origin both stay.
+        assert_eq!(stream_order(&outputs, &[(1920, 0), (1920, 0)]), vec![0, 1]);
+        assert!(stream_order(&outputs, &[]).is_empty());
+    }
 
     fn output(x: i32, y: i32, mode: (i32, i32)) -> WaylandDisplayInfo {
         WaylandDisplayInfo {
