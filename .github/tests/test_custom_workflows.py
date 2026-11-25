@@ -87,7 +87,7 @@ class ApkAbiCheck(unittest.TestCase):
     GOOD = b"rd.karbono.es hide-server-settings"
     BAD = b"rs-ny.rustdesk.com"
 
-    def run_script(self, libs, tmp=None):
+    def run_script(self, libs, tmp=None, dmg_libs=None):
         if tmp is None:
             tmp = tempfile.mkdtemp()
             self.addCleanup(shutil.rmtree, tmp)
@@ -97,6 +97,29 @@ class ApkAbiCheck(unittest.TestCase):
         for f in ("rustdesk-1.5.3-x86_64.exe", "rustdesk-1.5.3-x86_64.msi"):
             with open(os.path.join(assets, f), "wb") as fh:
                 fh.write(b"x")
+        if dmg_libs is None and shutil.which("7z"):
+            # Test both direct listing (7z >= 23 traversing into the volume) and two-stage partitioned
+            # extraction (outer DMG exposing 4.hfs, inner volume containing the app bundle).
+            dmg_libs = {
+                "rustdesk-1.5.3-aarch64.dmg": {"rustdesk-1.5.3/RustDesk.app/Contents/Frameworks/liblibrustdesk.dylib": self.GOOD},
+                "rustdesk-1.5.3-x86_64.dmg": ("partitioned", {"rustdesk-1.5.3/RustDesk.app/Contents/Frameworks/liblibrustdesk.dylib": self.GOOD}),
+            }
+        for dmg_name, entries in (dmg_libs or {}).items():
+            if isinstance(entries, tuple) and entries[0] == "partitioned":
+                inner_path = os.path.join(tmp, "4.hfs")
+                with zipfile.ZipFile(inner_path, "w") as inner_z:
+                    for arcname, data in entries[1].items():
+                        inner_z.writestr(arcname, data)
+                with open(inner_path, "rb") as inner_fh:
+                    inner_bytes = inner_fh.read()
+                os.remove(inner_path)
+                with zipfile.ZipFile(os.path.join(assets, dmg_name), "w") as z:
+                    z.writestr("0.ddm", b"ddm")
+                    z.writestr("4.hfs", inner_bytes)
+            else:
+                with zipfile.ZipFile(os.path.join(assets, dmg_name), "w") as z:
+                    for arcname, data in entries.items():
+                        z.writestr(arcname, data)
         with zipfile.ZipFile(os.path.join(assets, "rustdesk-1.5.3-universal.apk"), "w") as z:
             z.writestr("AndroidManifest.xml", "x")
             for abi, data in libs.items():
@@ -130,6 +153,8 @@ class ApkAbiCheck(unittest.TestCase):
             "rustdesk-soporte.exe",
             "rustdesk-soporte.msi",
             "rustdesk-soporte.apk",
+            "rustdesk-soporte-arm64.dmg",
+            "rustdesk-soporte-x86_64.dmg",
             "rustdesk-soporte-SHA256SUMS.txt",
             "rustdesk-soporte-VERSION.txt",
         ):
@@ -148,6 +173,8 @@ class ApkAbiCheck(unittest.TestCase):
             "rustdesk-soporte.exe",
             "rustdesk-soporte.msi",
             "rustdesk-soporte.apk",
+            "rustdesk-soporte-arm64.dmg",
+            "rustdesk-soporte-x86_64.dmg",
             "rustdesk-soporte-SHA256SUMS.txt",
             "rustdesk-soporte-VERSION.txt",
         ):
@@ -163,6 +190,25 @@ class ApkAbiCheck(unittest.TestCase):
         r = self.run_script({})
         self.assertNotEqual(r.returncode, 0)
         self.assertIn("no lib/<abi>/librustdesk.so", r.stdout)
+
+    def test_bad_dmg_dylib_fails(self):
+        r = self.run_script(
+            {"arm64-v8a": self.GOOD},
+            dmg_libs={"rustdesk-1.5.3-aarch64.dmg": {"RustDesk.app/Contents/Frameworks/liblibrustdesk.dylib": self.BAD}},
+        )
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("rustdesk-1.5.3-aarch64.dmg", r.stdout)
+
+    def test_missing_or_duplicate_dmg_dylib_fails(self):
+        for entries in (
+            {"RustDesk.app/Contents/MacOS/RustDesk": self.GOOD},
+            {
+                "RustDesk.app/Contents/Frameworks/liblibrustdesk.dylib": self.GOOD,
+                "Vol/RustDesk.app/Contents/Frameworks/liblibrustdesk.dylib": self.GOOD,
+            },
+        ):
+            r = self.run_script({"arm64-v8a": self.GOOD}, dmg_libs={"rustdesk-1.5.3-aarch64.dmg": entries})
+            self.assertNotEqual(r.returncode, 0)
 
 
 @unittest.skipUnless(shutil.which("shellcheck"), "needs shellcheck")

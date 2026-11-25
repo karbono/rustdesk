@@ -1,4 +1,4 @@
-name: Build Custom RustDesk (Windows & Android)
+name: Build Custom RustDesk (Windows, macOS, Android & Linux)
 
 on:
   workflow_dispatch:
@@ -47,7 +47,8 @@ jobs:
           gh release download "$TAG" --pattern 'rustdesk-[0-9]*-x86_64.exe' --pattern 'rustdesk-[0-9]*-x86_64.msi' \
             --pattern 'rustdesk-[0-9]*-universal.apk' --pattern 'rustdesk-[0-9]*-universal-signed.apk' \
             --pattern 'rustdesk-[0-9]*-x86_64.AppImage' --pattern 'rustdesk-[0-9]*-x86_64.deb' --pattern 'rustdesk-[0-9]*-x86_64.pkg.tar.zst' \
-            --pattern 'rustdesk-[0-9]*.x86_64.rpm' --pattern 'rustdesk-[0-9]*.x86_64-suse.rpm'
+            --pattern 'rustdesk-[0-9]*.x86_64.rpm' --pattern 'rustdesk-[0-9]*.x86_64-suse.rpm' \
+            --pattern 'rustdesk-[0-9]*-aarch64.dmg' --pattern 'rustdesk-[0-9]*-x86_64.dmg'
           # Highest version wins; for the same version a signed file (…-signed.apk) wins over an unsigned one.
           # With the signing secrets the APK is published as …-universal-signed.apk; without them it is
           # …-universal.apk, signed with a throwaway debug key.
@@ -64,6 +65,7 @@ jobs:
           appimage=$(newest rustdesk-[0-9]*-x86_64.AppImage); deb=$(newest rustdesk-[0-9]*-x86_64.deb)
           arch=$(newest rustdesk-[0-9]*-x86_64.pkg.tar.zst)
           rpm=$(newest rustdesk-[0-9]*.x86_64.rpm); rpmsuse=$(newest rustdesk-[0-9]*.x86_64-suse.rpm)
+          dmgarm=$(newest rustdesk-[0-9]*-aarch64.dmg); dmgx64=$(newest rustdesk-[0-9]*-x86_64.dmg)
           # A client that still points at the public servers, or lost the locked settings, must never
           # reach the short links. hide-server-settings only ends up in the Rust library through
           # patch_custom_server.py, so it marks that the settings lock was baked in.
@@ -110,8 +112,41 @@ jobs:
           done
           if [ -n "$rpm" ] && [ -s "$rpm" ]; then cp "$rpm" rustdesk-soporte.rpm; fi
           if [ -n "$rpmsuse" ] && [ -s "$rpmsuse" ]; then cp "$rpmsuse" rustdesk-soporte-suse.rpm; fi
+          # macOS is optional: the release may predate the macOS build.
+          # A UDIF DMG contains an inner partition image (*.hfs / *.apfs); if 7z lists a partition
+          # image at the top level instead of the app bundle directly, extract the inner volume first.
+          if { [ -n "$dmgarm" ] || [ -n "$dmgx64" ]; } && ! command -v 7z >/dev/null; then
+            sudo apt-get install -y -qq p7zip-full >/dev/null
+          fi
+          find_dylib() {
+            7z l -slt "$1" | sed -n 's|^Path = \(.*/RustDesk\.app/Contents/Frameworks/liblibrustdesk\.dylib\)$|\1|p; s|^Path = \(RustDesk\.app/Contents/Frameworks/liblibrustdesk\.dylib\)$|\1|p'
+          }
+          for f in "$dmgarm" "$dmgx64"; do
+            [ -n "$f" ] || continue
+            if [ ! -s "$f" ]; then echo "::error::$f is empty"; exit 1; fi
+            src="$f"
+            mapfile -t dylibs < <(find_dylib "$src")
+            if [ "${#dylibs[@]}" -eq 0 ]; then
+              mapfile -t parts < <(7z l -slt "$f" | sed -n 's|^Path = \(.*\.hfs\)$|\1|p; s|^Path = \(.*\.apfs\)$|\1|p')
+              if [ "${#parts[@]}" -eq 1 ]; then
+                7z e -so "$f" "${parts[0]}" > dmg-part.img
+                src="dmg-part.img"
+                mapfile -t dylibs < <(find_dylib "$src")
+              fi
+            fi
+            if [ "${#dylibs[@]}" -ne 1 ]; then
+              rm -f dmg-part.img
+              echo "::error::$f expected 1 RustDesk.app/Contents/Frameworks/liblibrustdesk.dylib, found ${#dylibs[@]}"; exit 1
+            fi
+            7z e -so "$src" "${dylibs[0]}" > lib.dylib
+            rm -f dmg-part.img
+            check_lib lib.dylib "$f (${dylibs[0]})"
+            rm -f lib.dylib
+          done
+          if [ -n "$dmgarm" ] && [ -s "$dmgarm" ]; then cp "$dmgarm" rustdesk-soporte-arm64.dmg; fi
+          if [ -n "$dmgx64" ] && [ -s "$dmgx64" ]; then cp "$dmgx64" rustdesk-soporte-x86_64.dmg; fi
           sha256sum rustdesk-soporte[.-]* > SHA256SUMS.tmp
           mv SHA256SUMS.tmp rustdesk-soporte-SHA256SUMS.txt
-          printf '%s\n' "$exe" "$msi" "$apk" $appimage $deb $arch $rpm $rpmsuse > rustdesk-soporte-VERSION.txt
+          printf '%s\n' "$exe" "$msi" "$apk" $appimage $deb $arch $rpm $rpmsuse $dmgarm $dmgx64 > rustdesk-soporte-VERSION.txt
           gh release upload "$TAG" rustdesk-soporte[.-]* --clobber
           cat rustdesk-soporte-VERSION.txt rustdesk-soporte-SHA256SUMS.txt >> "$GITHUB_STEP_SUMMARY"
