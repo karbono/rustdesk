@@ -11,7 +11,7 @@ homelab server baked in, and publishes them in the `custom` release.
   `build-custom.yml` sets; the other callers build the stock client. Release uploads are fatal, so the fixed names
   never point at assets from an older run. `python3 .github/tests/test_custom_workflows.py` checks these rules.
 - After the build, `fixed-name-downloads` copies the newest files to names that never change
-  (`rustdesk-lulos.exe`, `rustdesk-lulos.msi`, `rustdesk-lulos.apk`) and checks that the
+  (`rustdesk-soporte.exe`, `rustdesk-soporte.msi`, `rustdesk-soporte.apk`) and checks that the
   APK really contains the homelab server. `https://dl.karbono.es/win` and `/android` redirect to those.
   Run the workflow with `only_links` ticked to refresh them without building (about a minute).
 - Android signing: with the secrets `ANDROID_SIGNING_KEY` (base64 keystore), `ANDROID_ALIAS`,

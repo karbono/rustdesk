@@ -87,9 +87,10 @@ class ApkAbiCheck(unittest.TestCase):
     GOOD = b"rd.karbono.es hide-server-settings"
     BAD = b"rs-ny.rustdesk.com"
 
-    def run_script(self, libs):
-        tmp = tempfile.mkdtemp()
-        self.addCleanup(shutil.rmtree, tmp)
+    def run_script(self, libs, tmp=None):
+        if tmp is None:
+            tmp = tempfile.mkdtemp()
+            self.addCleanup(shutil.rmtree, tmp)
         assets, binp = os.path.join(tmp, "assets"), os.path.join(tmp, "bin")
         os.makedirs(assets)
         os.makedirs(binp)
@@ -102,15 +103,43 @@ class ApkAbiCheck(unittest.TestCase):
                 z.writestr(f"lib/{abi}/librustdesk.so", data)
         gh = os.path.join(binp, "gh")
         with open(gh, "w") as fh:
-            fh.write('#!/bin/sh\n[ "$2" = download ] && cp "$ASSETS"/* .\nexit 0\n')
+            fh.write(
+                '#!/bin/sh\n'
+                'if [ "$2" = download ]; then cp "$ASSETS"/* .; '
+                'elif [ "$2" = upload ]; then printf "%s\\n" "$@" > "$UPLOAD_LOG"; fi\n'
+                'exit 0\n'
+            )
         os.chmod(gh, 0o755)
         env = dict(os.environ, PATH=binp + os.pathsep + os.environ["PATH"], ASSETS=assets, TAG="custom",
+                   UPLOAD_LOG=os.path.join(tmp, "gh_upload_args.txt"),
                    GITHUB_STEP_SUMMARY=os.path.join(tmp, "summary"))
         return subprocess.run(["bash", "-c", fixed_name_script()], cwd=tmp, env=env, capture_output=True, text=True)
 
     def test_missing_abi_is_fine(self):
         r = self.run_script({"arm64-v8a": self.GOOD, "x86_64": self.GOOD})
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+
+    def test_publishes_rustdesk_soporte_names(self):
+        tmp = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, tmp)
+        r = self.run_script({"arm64-v8a": self.GOOD, "x86_64": self.GOOD}, tmp=tmp)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        dl_dir = os.path.join(tmp, "dl")
+        dl_files = sorted(os.listdir(dl_dir))
+        for expected in ("rustdesk-soporte.exe", "rustdesk-soporte.msi", "rustdesk-soporte.apk"):
+            self.assertIn(expected, dl_files)
+        self.assertFalse(any(f.startswith(("rustdesk-lulos.", "rustdesk-lulos-")) for f in dl_files), dl_files)
+        with open(os.path.join(dl_dir, "rustdesk-lulospi-SHA256SUMS.txt"), encoding="utf-8") as fh:
+            sums = fh.read()
+        for expected in ("rustdesk-soporte.exe", "rustdesk-soporte.msi", "rustdesk-soporte.apk"):
+            self.assertIn(expected, sums)
+        self.assertNotIn("rustdesk-lulos.", sums)
+        self.assertNotIn("rustdesk-lulos-", sums)
+        with open(os.path.join(tmp, "gh_upload_args.txt"), encoding="utf-8") as fh:
+            upload_args = fh.read().splitlines()
+        for expected in ("rustdesk-soporte.exe", "rustdesk-soporte.msi", "rustdesk-soporte.apk"):
+            self.assertIn(expected, upload_args)
+        self.assertFalse(any(a.startswith(("rustdesk-lulos.", "rustdesk-lulos-")) for a in upload_args), upload_args)
 
     def test_bad_present_abi_fails(self):
         r = self.run_script({"arm64-v8a": self.GOOD, "armeabi-v7a": self.BAD})
