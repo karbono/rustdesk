@@ -110,7 +110,8 @@ jobs:
           done
           if [ -n "$rpm" ] && [ -s "$rpm" ]; then cp "$rpm" rustdesk-soporte.rpm; fi
           if [ -n "$rpmsuse" ] && [ -s "$rpmsuse" ]; then cp "$rpmsuse" rustdesk-soporte-suse.rpm; fi
-          sha256sum rustdesk-soporte[.-]* > rustdesk-lulospi-SHA256SUMS.txt
-          printf '%s\n' "$exe" "$msi" "$apk" $appimage $deb $arch $rpm $rpmsuse > rustdesk-lulospi-VERSION.txt
-          gh release upload "$TAG" rustdesk-soporte[.-]* rustdesk-lulospi-SHA256SUMS.txt rustdesk-lulospi-VERSION.txt --clobber
-          cat rustdesk-lulospi-VERSION.txt rustdesk-lulospi-SHA256SUMS.txt >> "$GITHUB_STEP_SUMMARY"
+          sha256sum rustdesk-soporte[.-]* > SHA256SUMS.tmp
+          mv SHA256SUMS.tmp rustdesk-soporte-SHA256SUMS.txt
+          printf '%s\n' "$exe" "$msi" "$apk" $appimage $deb $arch $rpm $rpmsuse > rustdesk-soporte-VERSION.txt
+          gh release upload "$TAG" rustdesk-soporte[.-]* --clobber
+          cat rustdesk-soporte-VERSION.txt rustdesk-soporte-SHA256SUMS.txt >> "$GITHUB_STEP_SUMMARY"

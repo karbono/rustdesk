@@ -126,20 +126,33 @@ class ApkAbiCheck(unittest.TestCase):
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
         dl_dir = os.path.join(tmp, "dl")
         dl_files = sorted(os.listdir(dl_dir))
-        for expected in ("rustdesk-soporte.exe", "rustdesk-soporte.msi", "rustdesk-soporte.apk"):
+        for expected in (
+            "rustdesk-soporte.exe",
+            "rustdesk-soporte.msi",
+            "rustdesk-soporte.apk",
+            "rustdesk-soporte-SHA256SUMS.txt",
+            "rustdesk-soporte-VERSION.txt",
+        ):
             self.assertIn(expected, dl_files)
-        self.assertFalse(any(f.startswith(("rustdesk-lulos.", "rustdesk-lulos-")) for f in dl_files), dl_files)
-        with open(os.path.join(dl_dir, "rustdesk-lulospi-SHA256SUMS.txt"), encoding="utf-8") as fh:
+        self.assertFalse(any(f.startswith(("rustdesk-lulos.", "rustdesk-lulos-", "rustdesk-lulospi-")) for f in dl_files), dl_files)
+        with open(os.path.join(dl_dir, "rustdesk-soporte-SHA256SUMS.txt"), encoding="utf-8") as fh:
             sums = fh.read()
         for expected in ("rustdesk-soporte.exe", "rustdesk-soporte.msi", "rustdesk-soporte.apk"):
             self.assertIn(expected, sums)
-        self.assertNotIn("rustdesk-lulos.", sums)
-        self.assertNotIn("rustdesk-lulos-", sums)
+        self.assertNotIn("rustdesk-lulos", sums)
+        self.assertNotIn("rustdesk-soporte-SHA256SUMS.txt", sums)
+        self.assertNotIn("rustdesk-soporte-VERSION.txt", sums)
         with open(os.path.join(tmp, "gh_upload_args.txt"), encoding="utf-8") as fh:
             upload_args = fh.read().splitlines()
-        for expected in ("rustdesk-soporte.exe", "rustdesk-soporte.msi", "rustdesk-soporte.apk"):
+        for expected in (
+            "rustdesk-soporte.exe",
+            "rustdesk-soporte.msi",
+            "rustdesk-soporte.apk",
+            "rustdesk-soporte-SHA256SUMS.txt",
+            "rustdesk-soporte-VERSION.txt",
+        ):
             self.assertIn(expected, upload_args)
-        self.assertFalse(any(a.startswith(("rustdesk-lulos.", "rustdesk-lulos-")) for a in upload_args), upload_args)
+        self.assertFalse(any(a.startswith(("rustdesk-lulos.", "rustdesk-lulos-", "rustdesk-lulospi-")) for a in upload_args), upload_args)
 
     def test_bad_present_abi_fails(self):
         r = self.run_script({"arm64-v8a": self.GOOD, "armeabi-v7a": self.BAD})
